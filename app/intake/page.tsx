@@ -16,12 +16,16 @@ import {
 } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 
+/* ──────────────────────── Constants ──────────────────────── */
+
 const STEPS = [
   { id: 1, label: "About You" },
-  { id: 2, label: "Vision & Purpose" },
-  { id: 3, label: "What You Need" },
-  { id: 4, label: "Practicalities" },
-  { id: 5, label: "Review" },
+  { id: 2, label: "Vision & Problem" },
+  { id: 3, label: "Users & Features" },
+  { id: 4, label: "Technical Scope" },
+  { id: 5, label: "Goals & Budget" },
+  { id: 6, label: "Dream Big" },
+  { id: 7, label: "Review" },
 ]
 
 const CONTACT_METHODS = [
@@ -50,22 +54,33 @@ const ROLE_OPTIONS = [
   },
 ]
 
+/* ──────────────────────── Types & Initial Data ──────────────────────── */
+
 type FormData = {
   fullName: string
   contactMethod: string
   contactHandle: string
   role: string
-  vision: string
-  whoIsItFor: string
-  biggestChallenge: string
-  platforms: string[]
-  mustHaves: string
-  hasAnything: string
-  existingUrl: string
-  lookAndFeel: string
-  budgetRange: string
-  timeline: string
-  anythingElse: string
+  q1MainGoal: string
+  q2Problem: string
+  q3PrimaryUsers: string
+  q4UserActions: string
+  q5CurrentProcess: string
+  q6CurrentProblems: string
+  q7SystemType: string
+  q8WhoManages: string
+  q9UserCapabilities: string
+  q10AdminCapabilities: string
+  q11DataTypes: string
+  q12DataVolume: string
+  q13ExternalServices: string
+  q14LaunchDate: string
+  q15Priority: string
+  q16Budget: string
+  q17InitialUsers: string
+  q18FutureUsers: string
+  q19SuccessMetric: string
+  q20DreamSystem: string
 }
 
 const INITIAL_DATA: FormData = {
@@ -73,18 +88,29 @@ const INITIAL_DATA: FormData = {
   contactMethod: "",
   contactHandle: "",
   role: "",
-  vision: "",
-  whoIsItFor: "",
-  biggestChallenge: "",
-  platforms: [],
-  mustHaves: "",
-  hasAnything: "",
-  existingUrl: "",
-  lookAndFeel: "",
-  budgetRange: "",
-  timeline: "",
-  anythingElse: "",
+  q1MainGoal: "",
+  q2Problem: "",
+  q3PrimaryUsers: "",
+  q4UserActions: "",
+  q5CurrentProcess: "",
+  q6CurrentProblems: "",
+  q7SystemType: "",
+  q8WhoManages: "",
+  q9UserCapabilities: "",
+  q10AdminCapabilities: "",
+  q11DataTypes: "",
+  q12DataVolume: "",
+  q13ExternalServices: "",
+  q14LaunchDate: "",
+  q15Priority: "",
+  q16Budget: "",
+  q17InitialUsers: "",
+  q18FutureUsers: "",
+  q19SuccessMetric: "",
+  q20DreamSystem: "",
 }
+
+/* ──────────────────────── Validation ──────────────────────── */
 
 type StepErrors = Record<string, string>
 
@@ -102,24 +128,33 @@ function validateStep(step: number, formData: FormData): StepErrors {
         formData.contactMethod === "email" &&
         !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactHandle.trim())
       ) {
-        errors.contactHandle = "That doesn't look like a valid email. Mind checking?"
+        errors.contactHandle =
+          "That doesn't look like a valid email. Mind checking?"
       }
       if (!formData.role)
         errors.role = "Pick the option that best describes you."
       break
     case 2:
-      if (!formData.vision.trim())
-        errors.vision =
+      if (!formData.q1MainGoal.trim())
+        errors.q1MainGoal =
           "Even a rough idea is great -- just tell us what you're imagining."
+      if (!formData.q2Problem.trim())
+        errors.q2Problem =
+          "Tell us what's not working right now. This helps us understand your needs."
       break
     case 3:
-      if (!formData.mustHaves.trim())
-        errors.mustHaves =
-          "What are the must-have things your app should do? Even a short list helps."
+      if (!formData.q3PrimaryUsers.trim())
+        errors.q3PrimaryUsers =
+          "Help us understand who would be using this system."
+      if (!formData.q4UserActions.trim())
+        errors.q4UserActions =
+          "What should people be able to do? Even a short list helps."
       break
   }
   return errors
 }
+
+/* ──────────────────────── Main Page ──────────────────────── */
 
 export default function IntakePage() {
   const [currentStep, setCurrentStep] = useState(1)
@@ -129,7 +164,7 @@ export default function IntakePage() {
 
   const progress = (currentStep / STEPS.length) * 100
 
-  function updateField(field: keyof FormData, value: string | string[]) {
+  function updateField(field: keyof FormData, value: string) {
     setFormData((prev) => ({ ...prev, [field]: value }))
     if (errors[field]) {
       setErrors((prev) => {
@@ -138,15 +173,6 @@ export default function IntakePage() {
         return next
       })
     }
-  }
-
-  function togglePlatform(platform: string) {
-    setFormData((prev) => ({
-      ...prev,
-      platforms: prev.platforms.includes(platform)
-        ? prev.platforms.filter((p) => p !== platform)
-        : [...prev.platforms, platform],
-    }))
   }
 
   function nextStep() {
@@ -165,11 +191,6 @@ export default function IntakePage() {
   }
 
   function handleSubmit() {
-    const stepErrors = validateStep(currentStep, formData)
-    if (Object.keys(stepErrors).length > 0) {
-      setErrors(stepErrors)
-      return
-    }
     setSubmitted(true)
   }
 
@@ -230,27 +251,38 @@ export default function IntakePage() {
             />
           )}
           {currentStep === 2 && (
-            <StepVision
+            <StepVisionProblem
               formData={formData}
               updateField={updateField}
               errors={errors}
             />
           )}
           {currentStep === 3 && (
-            <StepWhatYouNeed
+            <StepUsersFeatures
               formData={formData}
               updateField={updateField}
-              togglePlatform={togglePlatform}
               errors={errors}
             />
           )}
           {currentStep === 4 && (
-            <StepPracticalities
+            <StepTechnicalScope
               formData={formData}
               updateField={updateField}
             />
           )}
-          {currentStep === 5 && <StepReview formData={formData} />}
+          {currentStep === 5 && (
+            <StepGoalsBudget
+              formData={formData}
+              updateField={updateField}
+            />
+          )}
+          {currentStep === 6 && (
+            <StepDreamBig
+              formData={formData}
+              updateField={updateField}
+            />
+          )}
+          {currentStep === 7 && <StepReview formData={formData} />}
 
           {/* Navigation */}
           <div className="mt-10 flex items-center justify-between">
@@ -284,7 +316,66 @@ export default function IntakePage() {
   )
 }
 
-/* ──────────────────────── Step Components ──────────────────────── */
+/* ──────────────────────── Shared Field Component ──────────────────────── */
+
+function QuestionField({
+  id,
+  label,
+  hint,
+  example,
+  required,
+  multiline,
+  value,
+  onChange,
+  error,
+}: {
+  id: string
+  label: string
+  hint?: string
+  example: string
+  required?: boolean
+  multiline?: boolean
+  value: string
+  onChange: (val: string) => void
+  error?: string
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor={id}>
+        {label}
+        {required && <span className="text-destructive"> *</span>}
+      </Label>
+      {hint && (
+        <p className="text-xs text-muted-foreground">{hint}</p>
+      )}
+      <p className="rounded-md border border-dashed border-border/60 bg-secondary/50 px-3 py-2 text-xs italic text-muted-foreground">
+        Example: {example}
+      </p>
+      {multiline ? (
+        <Textarea
+          id={id}
+          placeholder="Type your answer here..."
+          className={`min-h-28 ${error ? "border-destructive" : ""}`}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-invalid={!!error}
+        />
+      ) : (
+        <Input
+          id={id}
+          placeholder="Type your answer here..."
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-invalid={!!error}
+          className={error ? "border-destructive" : ""}
+        />
+      )}
+      {error && <p className="text-xs text-destructive">{error}</p>}
+    </div>
+  )
+}
+
+/* ──────────────────────── Step 1: About You ──────────────────────── */
 
 function StepAboutYou({
   formData,
@@ -360,12 +451,13 @@ function StepAboutYou({
           )}
         </div>
 
-        {/* Contact Handle (shown after method is selected) */}
+        {/* Contact Handle */}
         {formData.contactMethod && (
           <div className="flex flex-col gap-2">
             <Label htmlFor="contactHandle">
               Your{" "}
-              {CONTACT_METHODS.find((m) => m.value === formData.contactMethod)?.label}{" "}
+              {CONTACT_METHODS.find((m) => m.value === formData.contactMethod)
+                ?.label}{" "}
               details <span className="text-destructive">*</span>
             </Label>
             <Input
@@ -386,7 +478,9 @@ function StepAboutYou({
               className={errors.contactHandle ? "border-destructive" : ""}
             />
             {errors.contactHandle && (
-              <p className="text-xs text-destructive">{errors.contactHandle}</p>
+              <p className="text-xs text-destructive">
+                {errors.contactHandle}
+              </p>
             )}
           </div>
         )}
@@ -424,7 +518,9 @@ function StepAboutYou({
   )
 }
 
-function StepVision({
+/* ──────────────────────── Step 2: Vision & Problem ──────────────────────── */
+
+function StepVisionProblem({
   formData,
   updateField,
   errors,
@@ -436,221 +532,137 @@ function StepVision({
   return (
     <div>
       <h2 className="mb-2 text-2xl font-bold text-foreground">
-        Tell us about your vision
+        Let{"'"}s talk about your vision
       </h2>
       <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
-        Don{"'"}t worry about technical terms -- just describe it the way you
-        {"'"}d explain it to a friend over coffee.
+        Don{"'"}t worry about technical terms. Just describe things the way you
+        {"'"}d explain them to a friend. Each question has an example to guide
+        you.
       </p>
 
-      <div className="flex flex-col gap-6">
-        {/* Vision */}
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="vision">
-            If your app or software existed today, what would it do?{" "}
-            <span className="text-destructive">*</span>
-          </Label>
-          <p className="text-xs text-muted-foreground">
-            A sentence or two is fine. For example: {'"'}It would let my
-            customers book appointments and pay online without calling us.{'"'}
-          </p>
-          <Textarea
-            id="vision"
-            placeholder="Describe what you imagine your app doing..."
-            className={`min-h-32 ${errors.vision ? "border-destructive" : ""}`}
-            value={formData.vision}
-            onChange={(e) => updateField("vision", e.target.value)}
-            aria-invalid={!!errors.vision}
-          />
-          {errors.vision && (
-            <p className="text-xs text-destructive">{errors.vision}</p>
-          )}
-        </div>
+      <div className="flex flex-col gap-8">
+        <QuestionField
+          id="q1MainGoal"
+          label="What is the main goal of the system you want to build?"
+          hint="Think about what you want to achieve. What would this system do for you or your customers?"
+          example="I want homeowners in our city to find and book trusted home repair services online, instead of asking around on social media."
+          required
+          multiline
+          value={formData.q1MainGoal}
+          onChange={(v) => updateField("q1MainGoal", v)}
+          error={errors.q1MainGoal}
+        />
 
-        {/* Who is it for */}
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="whoIsItFor">
-            Who would use this?
-          </Label>
-          <p className="text-xs text-muted-foreground">
-            Think about the people who{"'"}d interact with it day to day.
-          </p>
-          <Input
-            id="whoIsItFor"
-            placeholder="e.g. My customers, my team, patients, students..."
-            value={formData.whoIsItFor}
-            onChange={(e) => updateField("whoIsItFor", e.target.value)}
-          />
-        </div>
+        <QuestionField
+          id="q2Problem"
+          label="What problem are you trying to solve?"
+          hint="What's frustrating or broken about how things work today?"
+          example="Customers waste hours messaging multiple repair shops on Facebook and never know who's available, reliable, or fairly priced."
+          required
+          multiline
+          value={formData.q2Problem}
+          onChange={(v) => updateField("q2Problem", v)}
+          error={errors.q2Problem}
+        />
 
-        {/* Biggest challenge */}
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="biggestChallenge">
-            What{"'"}s the biggest frustration or challenge this would solve?
-          </Label>
-          <p className="text-xs text-muted-foreground">
-            What{"'"}s happening right now that made you think {'"'}there has to
-            be a better way{'"'}?
-          </p>
-          <Textarea
-            id="biggestChallenge"
-            placeholder="e.g. We're tracking everything in spreadsheets and things keep falling through the cracks..."
-            className="min-h-24"
-            value={formData.biggestChallenge}
-            onChange={(e) => updateField("biggestChallenge", e.target.value)}
-          />
-        </div>
+        <QuestionField
+          id="q5CurrentProcess"
+          label="How is this currently being done today?"
+          hint="Is it handled manually, through messaging apps, paper, or spreadsheets?"
+          example="We post available services on Facebook and customers comment or send DMs. Bookings are tracked in a shared Google Sheet."
+          multiline
+          value={formData.q5CurrentProcess}
+          onChange={(v) => updateField("q5CurrentProcess", v)}
+        />
+
+        <QuestionField
+          id="q6CurrentProblems"
+          label="What are the biggest problems with how it works now?"
+          hint="What keeps going wrong or causes the most headaches?"
+          example="Double bookings happen all the time, payments are hard to track, and we lose potential customers because replies take too long."
+          multiline
+          value={formData.q6CurrentProblems}
+          onChange={(v) => updateField("q6CurrentProblems", v)}
+        />
       </div>
     </div>
   )
 }
 
-function StepWhatYouNeed({
+/* ──────────────────────── Step 3: Users & Features ──────────────────────── */
+
+function StepUsersFeatures({
   formData,
   updateField,
-  togglePlatform,
   errors,
 }: {
   formData: FormData
   updateField: (field: keyof FormData, value: string) => void
-  togglePlatform: (platform: string) => void
   errors: StepErrors
 }) {
-  const platformOptions = [
-    { value: "Web App", description: "Accessed through a browser" },
-    { value: "iPhone App", description: "Available on iPhones" },
-    { value: "Android App", description: "Available on Android phones" },
-    { value: "Both Mobile", description: "iPhone and Android" },
-    { value: "Not Sure", description: "We can help you decide" },
-  ]
-
   return (
     <div>
       <h2 className="mb-2 text-2xl font-bold text-foreground">
-        Let{"'"}s shape what you need
+        Who will use it and what should they be able to do?
       </h2>
       <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
-        We{"'"}ll help translate these into technical requirements later -- for
-        now, just tell us what matters to you.
+        Think about the different types of people who{"'"}ll interact with your
+        system. There{"'"}s no wrong answer here -- we{"'"}ll refine these
+        together.
       </p>
 
-      <div className="flex flex-col gap-6">
-        {/* Platforms */}
-        <div className="flex flex-col gap-2">
-          <Label>Where would people use this?</Label>
-          <p className="text-xs text-muted-foreground">
-            Select all that apply. Not sure? No problem -- pick {'"'}Not Sure
-            {'"'} and we{"'"}ll figure it out together.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {platformOptions.map((platform) => (
-              <button
-                key={platform.value}
-                type="button"
-                onClick={() => togglePlatform(platform.value)}
-                className={`flex flex-col rounded-lg border px-4 py-2.5 text-left transition-all ${
-                  formData.platforms.includes(platform.value)
-                    ? "border-foreground bg-foreground/5 text-foreground"
-                    : "border-border bg-secondary text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground"
-                }`}
-              >
-                <span className="text-sm font-medium">{platform.value}</span>
-                <span className="text-xs opacity-60">{platform.description}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+      <div className="flex flex-col gap-8">
+        <QuestionField
+          id="q3PrimaryUsers"
+          label="Who are the main people that would use this system?"
+          hint="List the different types of users. Who benefits from it?"
+          example="Homeowners who need repairs, service providers (plumbers, electricians, etc.), and our admin team who oversees everything."
+          required
+          multiline
+          value={formData.q3PrimaryUsers}
+          onChange={(v) => updateField("q3PrimaryUsers", v)}
+          error={errors.q3PrimaryUsers}
+        />
 
-        {/* Must-haves */}
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="mustHaves">
-            What are the must-have things it should do?{" "}
-            <span className="text-destructive">*</span>
-          </Label>
-          <p className="text-xs text-muted-foreground">
-            List the most important things. For example: {'"'}Let customers
-            create accounts, browse products, place orders, and track
-            delivery.{'"'}
-          </p>
-          <Textarea
-            id="mustHaves"
-            placeholder="List the key things your app needs to do..."
-            className={`min-h-32 ${errors.mustHaves ? "border-destructive" : ""}`}
-            value={formData.mustHaves}
-            onChange={(e) => updateField("mustHaves", e.target.value)}
-            aria-invalid={!!errors.mustHaves}
-          />
-          {errors.mustHaves && (
-            <p className="text-xs text-destructive">{errors.mustHaves}</p>
-          )}
-        </div>
+        <QuestionField
+          id="q4UserActions"
+          label="What do you want these users to be able to do?"
+          hint="Describe the key actions from each user's perspective."
+          example="Homeowners can search for services, read reviews, book appointments, and pay online. Service providers can list their services and manage their schedule."
+          required
+          multiline
+          value={formData.q4UserActions}
+          onChange={(v) => updateField("q4UserActions", v)}
+          error={errors.q4UserActions}
+        />
 
-        {/* Existing product */}
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="hasAnything">
-            Do you have anything built already?
-          </Label>
-          <Select
-            value={formData.hasAnything}
-            onValueChange={(v) => updateField("hasAnything", v)}
-          >
-            <SelectTrigger id="hasAnything" className="w-full">
-              <SelectValue placeholder="Select one" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="nothing">
-                No, starting completely fresh
-              </SelectItem>
-              <SelectItem value="spreadsheets">
-                I have spreadsheets / documents that outline my process
-              </SelectItem>
-              <SelectItem value="prototype">
-                I have a basic version or prototype
-              </SelectItem>
-              <SelectItem value="rebuild">
-                I have something but it needs to be rebuilt
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <QuestionField
+          id="q9UserCapabilities"
+          label="Specifically, what should regular users be able to do in the system?"
+          hint="Think step-by-step: what would a typical user do from start to finish?"
+          example="Create an account, search for a service, view ratings, book a time slot, pay with GCash or card, and leave a review after."
+          multiline
+          value={formData.q9UserCapabilities}
+          onChange={(v) => updateField("q9UserCapabilities", v)}
+        />
 
-        {formData.hasAnything &&
-          formData.hasAnything !== "nothing" && (
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="existingUrl">
-                Can you share a link to what you have? (optional)
-              </Label>
-              <Input
-                id="existingUrl"
-                placeholder="https://... or a Google Drive link"
-                value={formData.existingUrl}
-                onChange={(e) => updateField("existingUrl", e.target.value)}
-              />
-            </div>
-          )}
-
-        {/* Look and feel */}
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="lookAndFeel">
-            How should it look and feel?
-          </Label>
-          <p className="text-xs text-muted-foreground">
-            Any apps or websites you like the style of? Or just describe the
-            vibe: {'"'}clean and simple{'"'}, {'"'}bold and colorful{'"'}, etc.
-          </p>
-          <Input
-            id="lookAndFeel"
-            placeholder='e.g. "Clean and simple like Notion" or "Modern and bold"'
-            value={formData.lookAndFeel}
-            onChange={(e) => updateField("lookAndFeel", e.target.value)}
-          />
-        </div>
+        <QuestionField
+          id="q10AdminCapabilities"
+          label="What should administrators or managers be able to do?"
+          hint="Think about the people running things behind the scenes."
+          example="Approve new service providers, handle disputes, view earnings reports, send announcements, and manage user accounts."
+          multiline
+          value={formData.q10AdminCapabilities}
+          onChange={(v) => updateField("q10AdminCapabilities", v)}
+        />
       </div>
     </div>
   )
 }
 
-function StepPracticalities({
+/* ──────────────────────── Step 4: Technical Scope ──────────────────────── */
+
+function StepTechnicalScope({
   formData,
   updateField,
 }: {
@@ -660,99 +672,180 @@ function StepPracticalities({
   return (
     <div>
       <h2 className="mb-2 text-2xl font-bold text-foreground">
-        Almost there -- a few practical details
+        A bit about the technical side
+      </h2>
+      <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+        Don{"'"}t worry if you{"'"}re not sure about some of these -- just
+        answer what you can and we{"'"}ll figure out the rest together.
+      </p>
+
+      <div className="flex flex-col gap-8">
+        <QuestionField
+          id="q7SystemType"
+          label="What type of system do you think you need?"
+          hint="A website, a mobile app, or maybe both? It's okay if you're not sure."
+          example="I think a website that also works well on phones, and eventually a mobile app so customers can book on the go."
+          value={formData.q7SystemType}
+          onChange={(v) => updateField("q7SystemType", v)}
+        />
+
+        <QuestionField
+          id="q8WhoManages"
+          label="Who will manage the system day-to-day?"
+          hint="Who will be in charge of keeping things running and updated?"
+          example="Our operations manager will handle the admin side, and each service provider manages their own profile."
+          value={formData.q8WhoManages}
+          onChange={(v) => updateField("q8WhoManages", v)}
+        />
+
+        <QuestionField
+          id="q11DataTypes"
+          label="What kind of information will the system need to keep track of?"
+          hint="Think about the important data: people, items, orders, messages, etc."
+          example="User accounts, service provider profiles, bookings, payments, ratings, and support tickets."
+          value={formData.q11DataTypes}
+          onChange={(v) => updateField("q11DataTypes", v)}
+        />
+
+        <QuestionField
+          id="q12DataVolume"
+          label="How much data do you expect when you first launch?"
+          hint="A rough guess is fine. How many products, users, or records?"
+          example="Maybe 100 service providers and a few hundred customers to start with."
+          value={formData.q12DataVolume}
+          onChange={(v) => updateField("q12DataVolume", v)}
+        />
+
+        <QuestionField
+          id="q13ExternalServices"
+          label="Does it need to connect to any other services or tools?"
+          hint="Things like payment systems, messaging apps, maps, or notifications."
+          example="Yes -- GCash for payments, Google Maps for locating providers, and SMS for booking confirmations."
+          value={formData.q13ExternalServices}
+          onChange={(v) => updateField("q13ExternalServices", v)}
+        />
+      </div>
+    </div>
+  )
+}
+
+/* ──────────────────────── Step 5: Goals & Budget ──────────────────────── */
+
+function StepGoalsBudget({
+  formData,
+  updateField,
+}: {
+  formData: FormData
+  updateField: (field: keyof FormData, value: string) => void
+}) {
+  return (
+    <div>
+      <h2 className="mb-2 text-2xl font-bold text-foreground">
+        Timeline, budget, and expectations
       </h2>
       <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
         These help us give you a realistic picture during the discovery call.
-        All answers are optional.
+        All answers here are optional -- share what you{"'"}re comfortable
+        with.
       </p>
 
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="budgetRange">
-            Do you have a rough budget in mind?
-          </Label>
-          <p className="text-xs text-muted-foreground">
-            This is just to help us recommend the right approach. No commitment.
-          </p>
-          <Select
-            value={formData.budgetRange}
-            onValueChange={(v) => updateField("budgetRange", v)}
-          >
-            <SelectTrigger id="budgetRange" className="w-full">
-              <SelectValue placeholder="Pick a range (or skip this)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="under-500k">Under ₱500,000</SelectItem>
-              <SelectItem value="500k-1m">₱500,000 - ₱1,000,000</SelectItem>
-              <SelectItem value="1m-2.5m">₱1,000,000 - ₱2,500,000</SelectItem>
-              <SelectItem value="2.5m-5m">₱2,500,000 - ₱5,000,000</SelectItem>
-              <SelectItem value="over-5m">₱5,000,000+</SelectItem>
-              <SelectItem value="not-sure">
-                Honestly, no idea yet -- help me figure it out
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="flex flex-col gap-8">
+        <QuestionField
+          id="q14LaunchDate"
+          label="When do you want to launch the system?"
+          hint="A specific date or a general timeline -- either works."
+          example="Ideally within 4 months, before the holiday season picks up."
+          value={formData.q14LaunchDate}
+          onChange={(v) => updateField("q14LaunchDate", v)}
+        />
 
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="timeline">When are you hoping to get started?</Label>
-          <Select
-            value={formData.timeline}
-            onValueChange={(v) => updateField("timeline", v)}
-          >
-            <SelectTrigger id="timeline" className="w-full">
-              <SelectValue placeholder="Pick a timeline" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="asap">As soon as possible</SelectItem>
-              <SelectItem value="1-3-months">Within the next 1 - 3 months</SelectItem>
-              <SelectItem value="3-6-months">In 3 - 6 months</SelectItem>
-              <SelectItem value="flexible">
-                I{"'"}m flexible -- just exploring for now
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <QuestionField
+          id="q15Priority"
+          label="What is your top priority?"
+          hint="Is it speed of launch, having all features, or keeping costs low?"
+          example="Launch a simple working version first, then add more features based on customer feedback."
+          value={formData.q15Priority}
+          onChange={(v) => updateField("q15Priority", v)}
+        />
 
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="anythingElse">
-            Anything else you{"'"}d like us to know?
-          </Label>
-          <p className="text-xs text-muted-foreground">
-            Inspiration links, concerns, context -- anything that helps us
-            understand your world better.
-          </p>
-          <Textarea
-            id="anythingElse"
-            placeholder="Feel free to share anything on your mind..."
-            className="min-h-32"
-            value={formData.anythingElse}
-            onChange={(e) => updateField("anythingElse", e.target.value)}
-          />
-        </div>
+        <QuestionField
+          id="q16Budget"
+          label="What is your estimated budget range?"
+          hint="This is just to help us recommend the right approach. No commitment at all."
+          example="Somewhere between ₱150,000 to ₱400,000, depending on what's included."
+          value={formData.q16Budget}
+          onChange={(v) => updateField("q16Budget", v)}
+        />
+
+        <QuestionField
+          id="q17InitialUsers"
+          label="How many users do you expect when you first launch?"
+          hint="Just a rough guess to help us plan capacity."
+          example="Around 200-300 customers and maybe 50 service providers."
+          value={formData.q17InitialUsers}
+          onChange={(v) => updateField("q17InitialUsers", v)}
+        />
+
+        <QuestionField
+          id="q18FutureUsers"
+          label="How many users do you expect in 1-2 years?"
+          hint="Where do you see this growing?"
+          example="Hoping to reach 5,000 customers and 500 providers across nearby cities."
+          value={formData.q18FutureUsers}
+          onChange={(v) => updateField("q18FutureUsers", v)}
+        />
       </div>
     </div>
   )
 }
 
+/* ──────────────────────── Step 6: Dream Big ──────────────────────── */
+
+function StepDreamBig({
+  formData,
+  updateField,
+}: {
+  formData: FormData
+  updateField: (field: keyof FormData, value: string) => void
+}) {
+  return (
+    <div>
+      <h2 className="mb-2 text-2xl font-bold text-foreground">
+        Dream big -- we{"'"}re listening
+      </h2>
+      <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+        Last two questions. This is your chance to share your full vision and
+        how you{"'"}ll know it{"'"}s working.
+      </p>
+
+      <div className="flex flex-col gap-8">
+        <QuestionField
+          id="q19SuccessMetric"
+          label="How will you know the system is successful?"
+          hint="What does winning look like for you?"
+          example="When customers regularly book through the app instead of messaging us on Facebook, and service providers say it's helped them get more jobs."
+          multiline
+          value={formData.q19SuccessMetric}
+          onChange={(v) => updateField("q19SuccessMetric", v)}
+        />
+
+        <QuestionField
+          id="q20DreamSystem"
+          label="If there were no limitations, describe your dream system."
+          hint="Forget about budget or technology for a moment. What would the perfect version look like?"
+          example="A platform like Grab but for home services -- customers open the app, pick a service, get matched with a nearby provider instantly, pay seamlessly, and rate the experience. Providers have their own dashboard with earnings, analytics, and a scheduling tool."
+          multiline
+          value={formData.q20DreamSystem}
+          onChange={(v) => updateField("q20DreamSystem", v)}
+        />
+      </div>
+    </div>
+  )
+}
+
+/* ──────────────────────── Step 7: Review ──────────────────────── */
+
 function StepReview({ formData }: { formData: FormData }) {
-  const budgetLabels: Record<string, string> = {
-    "under-500k": "Under ₱500,000",
-    "500k-1m": "₱500,000 - ₱1,000,000",
-    "1m-2.5m": "₱1,000,000 - ₱2,500,000",
-    "2.5m-5m": "₱2,500,000 - ₱5,000,000",
-    "over-5m": "₱5,000,000+",
-    "not-sure": "Not sure yet",
-  }
-
-  const timelineLabels: Record<string, string> = {
-    asap: "As soon as possible",
-    "1-3-months": "Within 1 - 3 months",
-    "3-6-months": "In 3 - 6 months",
-    flexible: "Flexible -- just exploring",
-  }
-
   const roleLabels: Record<string, string> = {
     "technical-partner":
       "Looking for a technical partner to bring my idea to life",
@@ -774,7 +867,7 @@ function StepReview({ formData }: { formData: FormData }) {
         Here{"'"}s what you told us
       </h2>
       <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
-        Take a look and make sure everything looks right. You can go back to
+        Take a look and make sure everything feels right. You can go back to
         any step to make changes.
       </p>
 
@@ -793,56 +886,105 @@ function StepReview({ formData }: { formData: FormData }) {
 
         <div className="h-px bg-border" />
 
-        <ReviewSection title="Vision & Purpose">
-          <ReviewField label="The vision" value={formData.vision} />
+        <ReviewSection title="Vision & Problem">
+          <ReviewField label="Main goal" value={formData.q1MainGoal} />
+          <ReviewField label="Problem to solve" value={formData.q2Problem} />
           <ReviewField
-            label="Who it's for"
-            value={formData.whoIsItFor || "Not specified"}
+            label="Current process"
+            value={formData.q5CurrentProcess || "Not specified"}
           />
           <ReviewField
-            label="Biggest challenge"
-            value={formData.biggestChallenge || "Not specified"}
-          />
-        </ReviewSection>
-
-        <div className="h-px bg-border" />
-
-        <ReviewSection title="What You Need">
-          <ReviewField
-            label="Where people use it"
-            value={
-              formData.platforms.length > 0
-                ? formData.platforms.join(", ")
-                : "Not specified"
-            }
-          />
-          <ReviewField label="Must-haves" value={formData.mustHaves} />
-          <ReviewField
-            label="Look & feel"
-            value={formData.lookAndFeel || "Not specified"}
+            label="Current problems"
+            value={formData.q6CurrentProblems || "Not specified"}
           />
         </ReviewSection>
 
         <div className="h-px bg-border" />
 
-        <ReviewSection title="Practicalities">
+        <ReviewSection title="Users & Features">
+          <ReviewField label="Primary users" value={formData.q3PrimaryUsers} />
           <ReviewField
-            label="Budget"
-            value={budgetLabels[formData.budgetRange] || "Not specified"}
+            label="What users should do"
+            value={formData.q4UserActions}
           />
           <ReviewField
-            label="Timeline"
-            value={timelineLabels[formData.timeline] || "Not specified"}
+            label="User capabilities"
+            value={formData.q9UserCapabilities || "Not specified"}
           />
           <ReviewField
-            label="Other notes"
-            value={formData.anythingElse || "None"}
+            label="Admin capabilities"
+            value={formData.q10AdminCapabilities || "Not specified"}
+          />
+        </ReviewSection>
+
+        <div className="h-px bg-border" />
+
+        <ReviewSection title="Technical Scope">
+          <ReviewField
+            label="System type"
+            value={formData.q7SystemType || "Not specified"}
+          />
+          <ReviewField
+            label="Who manages it"
+            value={formData.q8WhoManages || "Not specified"}
+          />
+          <ReviewField
+            label="Data to track"
+            value={formData.q11DataTypes || "Not specified"}
+          />
+          <ReviewField
+            label="Initial data volume"
+            value={formData.q12DataVolume || "Not specified"}
+          />
+          <ReviewField
+            label="External services"
+            value={formData.q13ExternalServices || "Not specified"}
+          />
+        </ReviewSection>
+
+        <div className="h-px bg-border" />
+
+        <ReviewSection title="Goals & Budget">
+          <ReviewField
+            label="Launch target"
+            value={formData.q14LaunchDate || "Not specified"}
+          />
+          <ReviewField
+            label="Top priority"
+            value={formData.q15Priority || "Not specified"}
+          />
+          <ReviewField
+            label="Budget range"
+            value={formData.q16Budget || "Not specified"}
+          />
+          <ReviewField
+            label="Initial users"
+            value={formData.q17InitialUsers || "Not specified"}
+          />
+          <ReviewField
+            label="Users in 1-2 years"
+            value={formData.q18FutureUsers || "Not specified"}
+          />
+        </ReviewSection>
+
+        <div className="h-px bg-border" />
+
+        <ReviewSection title="Dream Big">
+          <ReviewField
+            label="Success metric"
+            value={formData.q19SuccessMetric || "Not specified"}
+          />
+          <ReviewField
+            label="Dream system"
+            value={formData.q20DreamSystem || "Not specified"}
           />
         </ReviewSection>
       </div>
     </div>
   )
 }
+
+/* ──────────────────────── Shared Review Components ──────────────────────── */
 
 function ReviewSection({
   title,
@@ -867,10 +1009,14 @@ function ReviewField({ label, value }: { label: string; value: string }) {
       <span className="min-w-40 shrink-0 text-sm text-muted-foreground">
         {label}
       </span>
-      <span className="text-sm text-foreground">{value || "---"}</span>
+      <span className="whitespace-pre-wrap text-sm text-foreground">
+        {value || "---"}
+      </span>
     </div>
   )
 }
+
+/* ──────────────────────── Success Screen ──────────────────────── */
 
 function SuccessScreen({ formData }: { formData: FormData }) {
   const contactLabel =
@@ -892,9 +1038,7 @@ function SuccessScreen({ formData }: { formData: FormData }) {
         </p>
         <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
           Someone from our team will reach out via{" "}
-          <span className="font-medium text-foreground">
-            {contactLabel}
-          </span>{" "}
+          <span className="font-medium text-foreground">{contactLabel}</span>{" "}
           at{" "}
           <span className="font-medium text-foreground">
             {formData.contactHandle || "your provided contact"}

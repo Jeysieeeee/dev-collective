@@ -322,7 +322,7 @@ function QuestionField({
   id,
   label,
   hint,
-  example,
+  placeholder,
   required,
   multiline,
   value,
@@ -332,7 +332,7 @@ function QuestionField({
   id: string
   label: string
   hint?: string
-  example: string
+  placeholder: string
   required?: boolean
   multiline?: boolean
   value: string
@@ -348,13 +348,10 @@ function QuestionField({
       {hint && (
         <p className="text-xs text-muted-foreground">{hint}</p>
       )}
-      <p className="rounded-md border border-dashed border-border/60 bg-secondary/50 px-3 py-2 text-xs italic text-muted-foreground">
-        Example: {example}
-      </p>
       {multiline ? (
         <Textarea
           id={id}
-          placeholder="Type your answer here..."
+          placeholder={placeholder}
           className={`min-h-28 ${error ? "border-destructive" : ""}`}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -363,7 +360,7 @@ function QuestionField({
       ) : (
         <Input
           id={id}
-          placeholder="Type your answer here..."
+          placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           aria-invalid={!!error}
@@ -544,8 +541,8 @@ function StepVisionProblem({
         <QuestionField
           id="q1MainGoal"
           label="What is the main goal of the system you want to build?"
-          hint="Think about what you want to achieve. What would this system do for you or your customers?"
-          example="I want homeowners in our city to find and book trusted home repair services online, instead of asking around on social media."
+          hint="What would this system do for you or your customers?"
+          placeholder="e.g. Let homeowners find and book repair services online"
           required
           multiline
           value={formData.q1MainGoal}
@@ -556,8 +553,8 @@ function StepVisionProblem({
         <QuestionField
           id="q2Problem"
           label="What problem are you trying to solve?"
-          hint="What's frustrating or broken about how things work today?"
-          example="Customers waste hours messaging multiple repair shops on Facebook and never know who's available, reliable, or fairly priced."
+          hint="What's frustrating about how things work today?"
+          placeholder="e.g. Customers waste time messaging shops on Facebook with no way to compare"
           required
           multiline
           value={formData.q2Problem}
@@ -568,8 +565,8 @@ function StepVisionProblem({
         <QuestionField
           id="q5CurrentProcess"
           label="How is this currently being done today?"
-          hint="Is it handled manually, through messaging apps, paper, or spreadsheets?"
-          example="We post available services on Facebook and customers comment or send DMs. Bookings are tracked in a shared Google Sheet."
+          hint="Manual, messaging apps, paper, spreadsheets?"
+          placeholder="e.g. We post on Facebook and track bookings in Google Sheets"
           multiline
           value={formData.q5CurrentProcess}
           onChange={(v) => updateField("q5CurrentProcess", v)}
@@ -578,8 +575,8 @@ function StepVisionProblem({
         <QuestionField
           id="q6CurrentProblems"
           label="What are the biggest problems with how it works now?"
-          hint="What keeps going wrong or causes the most headaches?"
-          example="Double bookings happen all the time, payments are hard to track, and we lose potential customers because replies take too long."
+          hint="What keeps going wrong?"
+          placeholder="e.g. Double bookings, slow replies, hard to track payments"
           multiline
           value={formData.q6CurrentProblems}
           onChange={(v) => updateField("q6CurrentProblems", v)}

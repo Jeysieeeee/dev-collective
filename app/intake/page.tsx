@@ -62,15 +62,50 @@ const INITIAL_DATA: FormData = {
   additionalNotes: "",
 }
 
+type StepErrors = Record<string, string>
+
+function validateStep(step: number, formData: FormData): StepErrors {
+  const errors: StepErrors = {}
+  switch (step) {
+    case 1:
+      if (!formData.fullName.trim()) errors.fullName = "Full name is required."
+      if (!formData.email.trim()) {
+        errors.email = "Email is required."
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+        errors.email = "Please enter a valid email address."
+      }
+      break
+    case 2:
+      if (!formData.projectName.trim())
+        errors.projectName = "Project name is required."
+      if (!formData.projectDescription.trim())
+        errors.projectDescription = "Project description is required."
+      break
+    case 3:
+      if (!formData.keyFeatures.trim())
+        errors.keyFeatures = "Key features are required."
+      break
+  }
+  return errors
+}
+
 export default function IntakePage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<FormData>(INITIAL_DATA)
   const [submitted, setSubmitted] = useState(false)
+  const [errors, setErrors] = useState<StepErrors>({})
 
   const progress = (currentStep / STEPS.length) * 100
 
   function updateField(field: keyof FormData, value: string | string[]) {
     setFormData((prev) => ({ ...prev, [field]: value }))
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
+    }
   }
 
   function togglePlatform(platform: string) {
@@ -83,14 +118,26 @@ export default function IntakePage() {
   }
 
   function nextStep() {
+    const stepErrors = validateStep(currentStep, formData)
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(stepErrors)
+      return
+    }
+    setErrors({})
     if (currentStep < STEPS.length) setCurrentStep(currentStep + 1)
   }
 
   function prevStep() {
+    setErrors({})
     if (currentStep > 1) setCurrentStep(currentStep - 1)
   }
 
   function handleSubmit() {
+    const stepErrors = validateStep(currentStep, formData)
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(stepErrors)
+      return
+    }
     setSubmitted(true)
   }
 
@@ -144,16 +191,17 @@ export default function IntakePage() {
       <main className="flex flex-1 items-start justify-center px-6 py-10 md:py-16">
         <div className="w-full max-w-2xl">
           {currentStep === 1 && (
-            <StepBasicInfo formData={formData} updateField={updateField} />
+            <StepBasicInfo formData={formData} updateField={updateField} errors={errors} />
           )}
           {currentStep === 2 && (
-            <StepYourIdea formData={formData} updateField={updateField} />
+            <StepYourIdea formData={formData} updateField={updateField} errors={errors} />
           )}
           {currentStep === 3 && (
             <StepRequirements
               formData={formData}
               updateField={updateField}
               togglePlatform={togglePlatform}
+              errors={errors}
             />
           )}
           {currentStep === 4 && (
@@ -198,9 +246,11 @@ export default function IntakePage() {
 function StepBasicInfo({
   formData,
   updateField,
+  errors,
 }: {
   formData: FormData
   updateField: (field: keyof FormData, value: string) => void
+  errors: StepErrors
 }) {
   return (
     <div>
@@ -221,7 +271,12 @@ function StepBasicInfo({
             placeholder="Jane Smith"
             value={formData.fullName}
             onChange={(e) => updateField("fullName", e.target.value)}
+            aria-invalid={!!errors.fullName}
+            className={errors.fullName ? "border-destructive" : ""}
           />
+          {errors.fullName && (
+            <p className="text-xs text-destructive">{errors.fullName}</p>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
@@ -234,7 +289,12 @@ function StepBasicInfo({
             placeholder="jane@company.com"
             value={formData.email}
             onChange={(e) => updateField("email", e.target.value)}
+            aria-invalid={!!errors.email}
+            className={errors.email ? "border-destructive" : ""}
           />
+          {errors.email && (
+            <p className="text-xs text-destructive">{errors.email}</p>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
@@ -274,9 +334,11 @@ function StepBasicInfo({
 function StepYourIdea({
   formData,
   updateField,
+  errors,
 }: {
   formData: FormData
   updateField: (field: keyof FormData, value: string) => void
+  errors: StepErrors
 }) {
   return (
     <div>
@@ -298,7 +360,12 @@ function StepYourIdea({
             placeholder="e.g. TaskFlow, HealthHub"
             value={formData.projectName}
             onChange={(e) => updateField("projectName", e.target.value)}
+            aria-invalid={!!errors.projectName}
+            className={errors.projectName ? "border-destructive" : ""}
           />
+          {errors.projectName && (
+            <p className="text-xs text-destructive">{errors.projectName}</p>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
@@ -308,12 +375,16 @@ function StepYourIdea({
           <Textarea
             id="projectDescription"
             placeholder="Describe your software idea in a few sentences. What does it do? What problem does it solve?"
-            className="min-h-32"
+            className={`min-h-32 ${errors.projectDescription ? "border-destructive" : ""}`}
             value={formData.projectDescription}
             onChange={(e) =>
               updateField("projectDescription", e.target.value)
             }
+            aria-invalid={!!errors.projectDescription}
           />
+          {errors.projectDescription && (
+            <p className="text-xs text-destructive">{errors.projectDescription}</p>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
@@ -347,10 +418,12 @@ function StepRequirements({
   formData,
   updateField,
   togglePlatform,
+  errors,
 }: {
   formData: FormData
   updateField: (field: keyof FormData, value: string) => void
   togglePlatform: (platform: string) => void
+  errors: StepErrors
 }) {
   const platformOptions = [
     "Web App",
@@ -397,10 +470,14 @@ function StepRequirements({
           <Textarea
             id="keyFeatures"
             placeholder="List the core features you need (e.g., user auth, dashboard, payments, notifications)."
-            className="min-h-32"
+            className={`min-h-32 ${errors.keyFeatures ? "border-destructive" : ""}`}
             value={formData.keyFeatures}
             onChange={(e) => updateField("keyFeatures", e.target.value)}
+            aria-invalid={!!errors.keyFeatures}
           />
+          {errors.keyFeatures && (
+            <p className="text-xs text-destructive">{errors.keyFeatures}</p>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">

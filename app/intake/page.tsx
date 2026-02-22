@@ -24,6 +24,13 @@ const STEPS = [
   { id: 5, label: "Review" },
 ]
 
+const CONTACT_METHODS = [
+  { value: "email", label: "Email", placeholder: "you@example.com", type: "email" },
+  { value: "telegram", label: "Telegram", placeholder: "@yourhandle", type: "text" },
+  { value: "wechat", label: "WeChat", placeholder: "Your WeChat ID", type: "text" },
+  { value: "viber", label: "Viber", placeholder: "Your Viber number", type: "tel" },
+]
+
 const ROLE_OPTIONS = [
   {
     value: "technical-partner",
@@ -45,7 +52,8 @@ const ROLE_OPTIONS = [
 
 type FormData = {
   fullName: string
-  email: string
+  contactMethod: string
+  contactHandle: string
   role: string
   vision: string
   whoIsItFor: string
@@ -62,7 +70,8 @@ type FormData = {
 
 const INITIAL_DATA: FormData = {
   fullName: "",
-  email: "",
+  contactMethod: "",
+  contactHandle: "",
   role: "",
   vision: "",
   whoIsItFor: "",
@@ -85,10 +94,15 @@ function validateStep(step: number, formData: FormData): StepErrors {
     case 1:
       if (!formData.fullName.trim())
         errors.fullName = "We need something to call you!"
-      if (!formData.email.trim()) {
-        errors.email = "We need a way to reach you."
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-        errors.email = "That doesn't look like a valid email. Mind checking?"
+      if (!formData.contactMethod) {
+        errors.contactMethod = "Please choose how you'd like us to reach you."
+      } else if (!formData.contactHandle.trim()) {
+        errors.contactHandle = "We need your contact details to follow up."
+      } else if (
+        formData.contactMethod === "email" &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactHandle.trim())
+      ) {
+        errors.contactHandle = "That doesn't look like a valid email. Mind checking?"
       }
       if (!formData.role)
         errors.role = "Pick the option that best describes you."
@@ -311,28 +325,71 @@ function StepAboutYou({
           )}
         </div>
 
-        {/* Email */}
+        {/* Contact Method */}
         <div className="flex flex-col gap-2">
-          <Label htmlFor="email">
+          <Label>
             Where should we reach you?{" "}
             <span className="text-destructive">*</span>
           </Label>
           <p className="text-xs text-muted-foreground">
-            We{"'"}ll only use this to follow up on your submission.
+            Pick your preferred way to chat, and we{"'"}ll follow up there.
           </p>
-          <Input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            value={formData.email}
-            onChange={(e) => updateField("email", e.target.value)}
-            aria-invalid={!!errors.email}
-            className={errors.email ? "border-destructive" : ""}
-          />
-          {errors.email && (
-            <p className="text-xs text-destructive">{errors.email}</p>
+          <Select
+            value={formData.contactMethod}
+            onValueChange={(v) => {
+              updateField("contactMethod", v)
+              updateField("contactHandle", "")
+            }}
+          >
+            <SelectTrigger
+              className={`w-full ${errors.contactMethod ? "border-destructive" : ""}`}
+              aria-invalid={!!errors.contactMethod}
+            >
+              <SelectValue placeholder="Choose a contact method" />
+            </SelectTrigger>
+            <SelectContent>
+              {CONTACT_METHODS.map((method) => (
+                <SelectItem key={method.value} value={method.value}>
+                  {method.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.contactMethod && (
+            <p className="text-xs text-destructive">{errors.contactMethod}</p>
           )}
         </div>
+
+        {/* Contact Handle (shown after method is selected) */}
+        {formData.contactMethod && (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="contactHandle">
+              Your{" "}
+              {CONTACT_METHODS.find((m) => m.value === formData.contactMethod)?.label}{" "}
+              details <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="contactHandle"
+              type={
+                CONTACT_METHODS.find(
+                  (m) => m.value === formData.contactMethod
+                )?.type || "text"
+              }
+              placeholder={
+                CONTACT_METHODS.find(
+                  (m) => m.value === formData.contactMethod
+                )?.placeholder || ""
+              }
+              value={formData.contactHandle}
+              onChange={(e) => updateField("contactHandle", e.target.value)}
+              aria-invalid={!!errors.contactHandle}
+              className={errors.contactHandle ? "border-destructive" : ""}
+            />
+            {errors.contactHandle && (
+              <p className="text-xs text-destructive">{errors.contactHandle}</p>
+            )}
+          </div>
+        )}
 
         {/* Role */}
         <div className="flex flex-col gap-2">
@@ -707,6 +764,10 @@ function StepReview({ formData }: { formData: FormData }) {
       "Exploring whether a software product makes sense for my use case",
   }
 
+  const contactMethodLabel =
+    CONTACT_METHODS.find((m) => m.value === formData.contactMethod)?.label ||
+    "Contact"
+
   return (
     <div>
       <h2 className="mb-2 text-2xl font-bold text-foreground">
@@ -720,7 +781,10 @@ function StepReview({ formData }: { formData: FormData }) {
       <div className="flex flex-col gap-6 rounded-xl border border-border bg-card p-6">
         <ReviewSection title="About You">
           <ReviewField label="Name" value={formData.fullName} />
-          <ReviewField label="Contact" value={formData.email} />
+          <ReviewField
+            label={`Contact (${contactMethodLabel})`}
+            value={formData.contactHandle}
+          />
           <ReviewField
             label="I am..."
             value={roleLabels[formData.role] || "Not specified"}
@@ -809,6 +873,10 @@ function ReviewField({ label, value }: { label: string; value: string }) {
 }
 
 function SuccessScreen({ formData }: { formData: FormData }) {
+  const contactLabel =
+    CONTACT_METHODS.find((m) => m.value === formData.contactMethod)?.label ||
+    "your preferred channel"
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6">
       <div className="w-full max-w-md text-center">
@@ -823,9 +891,13 @@ function SuccessScreen({ formData }: { formData: FormData }) {
           discovery call.
         </p>
         <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
-          Someone from our team will reach out to{" "}
+          Someone from our team will reach out via{" "}
           <span className="font-medium text-foreground">
-            {formData.email || "your email"}
+            {contactLabel}
+          </span>{" "}
+          at{" "}
+          <span className="font-medium text-foreground">
+            {formData.contactHandle || "your provided contact"}
           </span>{" "}
           within 1-2 business days. We{"'"}re looking forward to it.
         </p>

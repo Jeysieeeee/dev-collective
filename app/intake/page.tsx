@@ -17,49 +17,64 @@ import {
 import { Progress } from "@/components/ui/progress"
 
 const STEPS = [
-  { id: 1, label: "Basic Info" },
-  { id: 2, label: "Your Idea" },
-  { id: 3, label: "Requirements" },
-  { id: 4, label: "Budget & Timeline" },
+  { id: 1, label: "About You" },
+  { id: 2, label: "Vision & Purpose" },
+  { id: 3, label: "What You Need" },
+  { id: 4, label: "Practicalities" },
   { id: 5, label: "Review" },
+]
+
+const ROLE_OPTIONS = [
+  {
+    value: "technical-partner",
+    label: "Looking for a technical partner to bring my idea to life",
+  },
+  {
+    value: "business-owner",
+    label: "A business owner who wants to digitize operations or launch a new revenue stream",
+  },
+  {
+    value: "custom-software",
+    label: "Looking for a team that will build custom software to replace spreadsheets and manual work",
+  },
+  {
+    value: "exploring",
+    label: "Exploring whether a software product makes sense for my use case",
+  },
 ]
 
 type FormData = {
   fullName: string
   email: string
-  companyName: string
   role: string
-  projectName: string
-  projectDescription: string
-  targetAudience: string
-  problemSolved: string
+  vision: string
+  whoIsItFor: string
+  biggestChallenge: string
   platforms: string[]
-  keyFeatures: string
-  hasExistingProduct: string
-  existingProductUrl: string
-  designPreferences: string
+  mustHaves: string
+  hasAnything: string
+  existingUrl: string
+  lookAndFeel: string
   budgetRange: string
   timeline: string
-  additionalNotes: string
+  anythingElse: string
 }
 
 const INITIAL_DATA: FormData = {
   fullName: "",
   email: "",
-  companyName: "",
   role: "",
-  projectName: "",
-  projectDescription: "",
-  targetAudience: "",
-  problemSolved: "",
+  vision: "",
+  whoIsItFor: "",
+  biggestChallenge: "",
   platforms: [],
-  keyFeatures: "",
-  hasExistingProduct: "",
-  existingProductUrl: "",
-  designPreferences: "",
+  mustHaves: "",
+  hasAnything: "",
+  existingUrl: "",
+  lookAndFeel: "",
   budgetRange: "",
   timeline: "",
-  additionalNotes: "",
+  anythingElse: "",
 }
 
 type StepErrors = Record<string, string>
@@ -68,22 +83,25 @@ function validateStep(step: number, formData: FormData): StepErrors {
   const errors: StepErrors = {}
   switch (step) {
     case 1:
-      if (!formData.fullName.trim()) errors.fullName = "Full name is required."
+      if (!formData.fullName.trim())
+        errors.fullName = "We need something to call you!"
       if (!formData.email.trim()) {
-        errors.email = "Email is required."
+        errors.email = "We need a way to reach you."
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-        errors.email = "Please enter a valid email address."
+        errors.email = "That doesn't look like a valid email. Mind checking?"
       }
+      if (!formData.role)
+        errors.role = "Pick the option that best describes you."
       break
     case 2:
-      if (!formData.projectName.trim())
-        errors.projectName = "Project name is required."
-      if (!formData.projectDescription.trim())
-        errors.projectDescription = "Project description is required."
+      if (!formData.vision.trim())
+        errors.vision =
+          "Even a rough idea is great -- just tell us what you're imagining."
       break
     case 3:
-      if (!formData.keyFeatures.trim())
-        errors.keyFeatures = "Key features are required."
+      if (!formData.mustHaves.trim())
+        errors.mustHaves =
+          "What are the must-have things your app should do? Even a short list helps."
       break
   }
   return errors
@@ -191,13 +209,21 @@ export default function IntakePage() {
       <main className="flex flex-1 items-start justify-center px-6 py-10 md:py-16">
         <div className="w-full max-w-2xl">
           {currentStep === 1 && (
-            <StepBasicInfo formData={formData} updateField={updateField} errors={errors} />
+            <StepAboutYou
+              formData={formData}
+              updateField={updateField}
+              errors={errors}
+            />
           )}
           {currentStep === 2 && (
-            <StepYourIdea formData={formData} updateField={updateField} errors={errors} />
+            <StepVision
+              formData={formData}
+              updateField={updateField}
+              errors={errors}
+            />
           )}
           {currentStep === 3 && (
-            <StepRequirements
+            <StepWhatYouNeed
               formData={formData}
               updateField={updateField}
               togglePlatform={togglePlatform}
@@ -205,7 +231,10 @@ export default function IntakePage() {
             />
           )}
           {currentStep === 4 && (
-            <StepBudgetTimeline formData={formData} updateField={updateField} />
+            <StepPracticalities
+              formData={formData}
+              updateField={updateField}
+            />
           )}
           {currentStep === 5 && <StepReview formData={formData} />}
 
@@ -230,7 +259,7 @@ export default function IntakePage() {
                 onClick={handleSubmit}
                 className="gap-2 rounded-full px-6"
               >
-                Submit Intake
+                Submit
                 <Check className="size-4" />
               </Button>
             )}
@@ -243,7 +272,7 @@ export default function IntakePage() {
 
 /* ──────────────────────── Step Components ──────────────────────── */
 
-function StepBasicInfo({
+function StepAboutYou({
   formData,
   updateField,
   errors,
@@ -255,20 +284,23 @@ function StepBasicInfo({
   return (
     <div>
       <h2 className="mb-2 text-2xl font-bold text-foreground">
-        Let{"'"}s start with the basics
+        Great to meet you!
       </h2>
-      <p className="mb-8 text-sm text-muted-foreground">
-        Tell us a bit about yourself so we can personalize your experience.
+      <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+        Before we dive in, we{"'"}d love to know a little about you. No
+        technical knowledge needed -- just be yourself.
       </p>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
+        {/* Name */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="fullName">
-            Full Name <span className="text-destructive">*</span>
+            What would you like us to call you?{" "}
+            <span className="text-destructive">*</span>
           </Label>
           <Input
             id="fullName"
-            placeholder="Jane Smith"
+            placeholder="e.g. Jane, Marcus, Dr. Lee..."
             value={formData.fullName}
             onChange={(e) => updateField("fullName", e.target.value)}
             aria-invalid={!!errors.fullName}
@@ -279,14 +311,19 @@ function StepBasicInfo({
           )}
         </div>
 
+        {/* Email */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="email">
-            Email <span className="text-destructive">*</span>
+            Where should we reach you?{" "}
+            <span className="text-destructive">*</span>
           </Label>
+          <p className="text-xs text-muted-foreground">
+            We{"'"}ll only use this to follow up on your submission.
+          </p>
           <Input
             id="email"
             type="email"
-            placeholder="jane@company.com"
+            placeholder="you@example.com"
             value={formData.email}
             onChange={(e) => updateField("email", e.target.value)}
             aria-invalid={!!errors.email}
@@ -297,41 +334,40 @@ function StepBasicInfo({
           )}
         </div>
 
+        {/* Role */}
         <div className="flex flex-col gap-2">
-          <Label htmlFor="companyName">Company Name (optional)</Label>
-          <Input
-            id="companyName"
-            placeholder="Acme Inc."
-            value={formData.companyName}
-            onChange={(e) => updateField("companyName", e.target.value)}
-          />
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="role">Your Role</Label>
-          <Select
-            value={formData.role}
-            onValueChange={(v) => updateField("role", v)}
-          >
-            <SelectTrigger id="role" className="w-full">
-              <SelectValue placeholder="Select your role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="founder">Founder / CEO</SelectItem>
-              <SelectItem value="product-manager">Product Manager</SelectItem>
-              <SelectItem value="cto">CTO / Technical Lead</SelectItem>
-              <SelectItem value="designer">Designer</SelectItem>
-              <SelectItem value="marketing">Marketing</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label>
+            I am... <span className="text-destructive">*</span>
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            Pick whichever feels closest. There are no wrong answers.
+          </p>
+          <div className="flex flex-col gap-2">
+            {ROLE_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => updateField("role", option.value)}
+                className={`rounded-lg border px-4 py-3 text-left text-sm transition-all ${
+                  formData.role === option.value
+                    ? "border-foreground bg-foreground/5 text-foreground"
+                    : "border-border bg-secondary text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          {errors.role && (
+            <p className="text-xs text-destructive">{errors.role}</p>
+          )}
         </div>
       </div>
     </div>
   )
 }
 
-function StepYourIdea({
+function StepVision({
   formData,
   updateField,
   errors,
@@ -343,70 +379,68 @@ function StepYourIdea({
   return (
     <div>
       <h2 className="mb-2 text-2xl font-bold text-foreground">
-        Describe your idea
+        Tell us about your vision
       </h2>
-      <p className="mb-8 text-sm text-muted-foreground">
-        Help us understand what you want to build. The more detail, the better
-        we can prepare.
+      <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+        Don{"'"}t worry about technical terms -- just describe it the way you
+        {"'"}d explain it to a friend over coffee.
       </p>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
+        {/* Vision */}
         <div className="flex flex-col gap-2">
-          <Label htmlFor="projectName">
-            Project Name <span className="text-destructive">*</span>
+          <Label htmlFor="vision">
+            If your app or software existed today, what would it do?{" "}
+            <span className="text-destructive">*</span>
           </Label>
-          <Input
-            id="projectName"
-            placeholder="e.g. TaskFlow, HealthHub"
-            value={formData.projectName}
-            onChange={(e) => updateField("projectName", e.target.value)}
-            aria-invalid={!!errors.projectName}
-            className={errors.projectName ? "border-destructive" : ""}
+          <p className="text-xs text-muted-foreground">
+            A sentence or two is fine. For example: {'"'}It would let my
+            customers book appointments and pay online without calling us.{'"'}
+          </p>
+          <Textarea
+            id="vision"
+            placeholder="Describe what you imagine your app doing..."
+            className={`min-h-32 ${errors.vision ? "border-destructive" : ""}`}
+            value={formData.vision}
+            onChange={(e) => updateField("vision", e.target.value)}
+            aria-invalid={!!errors.vision}
           />
-          {errors.projectName && (
-            <p className="text-xs text-destructive">{errors.projectName}</p>
+          {errors.vision && (
+            <p className="text-xs text-destructive">{errors.vision}</p>
           )}
         </div>
 
+        {/* Who is it for */}
         <div className="flex flex-col gap-2">
-          <Label htmlFor="projectDescription">
-            Project Description <span className="text-destructive">*</span>
+          <Label htmlFor="whoIsItFor">
+            Who would use this?
           </Label>
-          <Textarea
-            id="projectDescription"
-            placeholder="Describe your software idea in a few sentences. What does it do? What problem does it solve?"
-            className={`min-h-32 ${errors.projectDescription ? "border-destructive" : ""}`}
-            value={formData.projectDescription}
-            onChange={(e) =>
-              updateField("projectDescription", e.target.value)
-            }
-            aria-invalid={!!errors.projectDescription}
-          />
-          {errors.projectDescription && (
-            <p className="text-xs text-destructive">{errors.projectDescription}</p>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="targetAudience">Who is the target audience?</Label>
+          <p className="text-xs text-muted-foreground">
+            Think about the people who{"'"}d interact with it day to day.
+          </p>
           <Input
-            id="targetAudience"
-            placeholder="e.g. Small business owners, healthcare professionals"
-            value={formData.targetAudience}
-            onChange={(e) => updateField("targetAudience", e.target.value)}
+            id="whoIsItFor"
+            placeholder="e.g. My customers, my team, patients, students..."
+            value={formData.whoIsItFor}
+            onChange={(e) => updateField("whoIsItFor", e.target.value)}
           />
         </div>
 
+        {/* Biggest challenge */}
         <div className="flex flex-col gap-2">
-          <Label htmlFor="problemSolved">
-            What problem does this solve?
+          <Label htmlFor="biggestChallenge">
+            What{"'"}s the biggest frustration or challenge this would solve?
           </Label>
+          <p className="text-xs text-muted-foreground">
+            What{"'"}s happening right now that made you think {'"'}there has to
+            be a better way{'"'}?
+          </p>
           <Textarea
-            id="problemSolved"
-            placeholder="Describe the pain point or gap your product addresses."
+            id="biggestChallenge"
+            placeholder="e.g. We're tracking everything in spreadsheets and things keep falling through the cracks..."
             className="min-h-24"
-            value={formData.problemSolved}
-            onChange={(e) => updateField("problemSolved", e.target.value)}
+            value={formData.biggestChallenge}
+            onChange={(e) => updateField("biggestChallenge", e.target.value)}
           />
         </div>
       </div>
@@ -414,7 +448,7 @@ function StepYourIdea({
   )
 }
 
-function StepRequirements({
+function StepWhatYouNeed({
   formData,
   updateField,
   togglePlatform,
@@ -426,107 +460,132 @@ function StepRequirements({
   errors: StepErrors
 }) {
   const platformOptions = [
-    "Web App",
-    "iOS",
-    "Android",
-    "Desktop",
-    "API / Backend",
+    { value: "Web App", description: "Accessed through a browser" },
+    { value: "iPhone App", description: "Available on iPhones" },
+    { value: "Android App", description: "Available on Android phones" },
+    { value: "Both Mobile", description: "iPhone and Android" },
+    { value: "Not Sure", description: "We can help you decide" },
   ]
 
   return (
     <div>
       <h2 className="mb-2 text-2xl font-bold text-foreground">
-        Technical requirements
+        Let{"'"}s shape what you need
       </h2>
-      <p className="mb-8 text-sm text-muted-foreground">
-        Tell us about the platforms and features you need.
+      <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+        We{"'"}ll help translate these into technical requirements later -- for
+        now, just tell us what matters to you.
       </p>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
+        {/* Platforms */}
         <div className="flex flex-col gap-2">
-          <Label>Target Platforms</Label>
+          <Label>Where would people use this?</Label>
+          <p className="text-xs text-muted-foreground">
+            Select all that apply. Not sure? No problem -- pick {'"'}Not Sure
+            {'"'} and we{"'"}ll figure it out together.
+          </p>
           <div className="flex flex-wrap gap-2">
             {platformOptions.map((platform) => (
               <button
-                key={platform}
+                key={platform.value}
                 type="button"
-                onClick={() => togglePlatform(platform)}
-                className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                  formData.platforms.includes(platform)
-                    ? "border-foreground bg-foreground text-background"
+                onClick={() => togglePlatform(platform.value)}
+                className={`flex flex-col rounded-lg border px-4 py-2.5 text-left transition-all ${
+                  formData.platforms.includes(platform.value)
+                    ? "border-foreground bg-foreground/5 text-foreground"
                     : "border-border bg-secondary text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground"
                 }`}
               >
-                {platform}
+                <span className="text-sm font-medium">{platform.value}</span>
+                <span className="text-xs opacity-60">{platform.description}</span>
               </button>
             ))}
           </div>
         </div>
 
+        {/* Must-haves */}
         <div className="flex flex-col gap-2">
-          <Label htmlFor="keyFeatures">
-            Key Features <span className="text-destructive">*</span>
+          <Label htmlFor="mustHaves">
+            What are the must-have things it should do?{" "}
+            <span className="text-destructive">*</span>
           </Label>
+          <p className="text-xs text-muted-foreground">
+            List the most important things. For example: {'"'}Let customers
+            create accounts, browse products, place orders, and track
+            delivery.{'"'}
+          </p>
           <Textarea
-            id="keyFeatures"
-            placeholder="List the core features you need (e.g., user auth, dashboard, payments, notifications)."
-            className={`min-h-32 ${errors.keyFeatures ? "border-destructive" : ""}`}
-            value={formData.keyFeatures}
-            onChange={(e) => updateField("keyFeatures", e.target.value)}
-            aria-invalid={!!errors.keyFeatures}
+            id="mustHaves"
+            placeholder="List the key things your app needs to do..."
+            className={`min-h-32 ${errors.mustHaves ? "border-destructive" : ""}`}
+            value={formData.mustHaves}
+            onChange={(e) => updateField("mustHaves", e.target.value)}
+            aria-invalid={!!errors.mustHaves}
           />
-          {errors.keyFeatures && (
-            <p className="text-xs text-destructive">{errors.keyFeatures}</p>
+          {errors.mustHaves && (
+            <p className="text-xs text-destructive">{errors.mustHaves}</p>
           )}
         </div>
 
+        {/* Existing product */}
         <div className="flex flex-col gap-2">
-          <Label htmlFor="hasExistingProduct">
-            Do you have an existing product or prototype?
+          <Label htmlFor="hasAnything">
+            Do you have anything built already?
           </Label>
           <Select
-            value={formData.hasExistingProduct}
-            onValueChange={(v) => updateField("hasExistingProduct", v)}
+            value={formData.hasAnything}
+            onValueChange={(v) => updateField("hasAnything", v)}
           >
-            <SelectTrigger id="hasExistingProduct" className="w-full">
+            <SelectTrigger id="hasAnything" className="w-full">
               <SelectValue placeholder="Select one" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="no">No, starting from scratch</SelectItem>
-              <SelectItem value="prototype">
-                Yes, I have a prototype / MVP
+              <SelectItem value="nothing">
+                No, starting completely fresh
               </SelectItem>
-              <SelectItem value="redesign">
-                Yes, need a redesign / rebuild
+              <SelectItem value="spreadsheets">
+                I have spreadsheets / documents that outline my process
+              </SelectItem>
+              <SelectItem value="prototype">
+                I have a basic version or prototype
+              </SelectItem>
+              <SelectItem value="rebuild">
+                I have something but it needs to be rebuilt
               </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {formData.hasExistingProduct &&
-          formData.hasExistingProduct !== "no" && (
+        {formData.hasAnything &&
+          formData.hasAnything !== "nothing" && (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="existingProductUrl">Link to existing product</Label>
+              <Label htmlFor="existingUrl">
+                Can you share a link to what you have? (optional)
+              </Label>
               <Input
-                id="existingProductUrl"
-                placeholder="https://..."
-                value={formData.existingProductUrl}
-                onChange={(e) =>
-                  updateField("existingProductUrl", e.target.value)
-                }
+                id="existingUrl"
+                placeholder="https://... or a Google Drive link"
+                value={formData.existingUrl}
+                onChange={(e) => updateField("existingUrl", e.target.value)}
               />
             </div>
           )}
 
+        {/* Look and feel */}
         <div className="flex flex-col gap-2">
-          <Label htmlFor="designPreferences">Design preferences</Label>
+          <Label htmlFor="lookAndFeel">
+            How should it look and feel?
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            Any apps or websites you like the style of? Or just describe the
+            vibe: {'"'}clean and simple{'"'}, {'"'}bold and colorful{'"'}, etc.
+          </p>
           <Input
-            id="designPreferences"
-            placeholder="e.g. Clean & minimal, bold & colorful, similar to Linear.app"
-            value={formData.designPreferences}
-            onChange={(e) =>
-              updateField("designPreferences", e.target.value)
-            }
+            id="lookAndFeel"
+            placeholder='e.g. "Clean and simple like Notion" or "Modern and bold"'
+            value={formData.lookAndFeel}
+            onChange={(e) => updateField("lookAndFeel", e.target.value)}
           />
         </div>
       </div>
@@ -534,7 +593,7 @@ function StepRequirements({
   )
 }
 
-function StepBudgetTimeline({
+function StepPracticalities({
   formData,
   updateField,
 }: {
@@ -544,21 +603,27 @@ function StepBudgetTimeline({
   return (
     <div>
       <h2 className="mb-2 text-2xl font-bold text-foreground">
-        Budget & timeline
+        Almost there -- a few practical details
       </h2>
-      <p className="mb-8 text-sm text-muted-foreground">
-        Help us understand your constraints so we can tailor our recommendation.
+      <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+        These help us give you a realistic picture during the discovery call.
+        All answers are optional.
       </p>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="budgetRange">Estimated Budget</Label>
+          <Label htmlFor="budgetRange">
+            Do you have a rough budget in mind?
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            This is just to help us recommend the right approach. No commitment.
+          </p>
           <Select
             value={formData.budgetRange}
             onValueChange={(v) => updateField("budgetRange", v)}
           >
             <SelectTrigger id="budgetRange" className="w-full">
-              <SelectValue placeholder="Select a range" />
+              <SelectValue placeholder="Pick a range (or skip this)" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="under-10k">Under $10,000</SelectItem>
@@ -566,38 +631,47 @@ function StepBudgetTimeline({
               <SelectItem value="25k-50k">$25,000 - $50,000</SelectItem>
               <SelectItem value="50k-100k">$50,000 - $100,000</SelectItem>
               <SelectItem value="over-100k">$100,000+</SelectItem>
-              <SelectItem value="not-sure">Not sure yet</SelectItem>
+              <SelectItem value="not-sure">
+                Honestly, no idea yet -- help me figure it out
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="flex flex-col gap-2">
-          <Label htmlFor="timeline">Desired Timeline</Label>
+          <Label htmlFor="timeline">When are you hoping to get started?</Label>
           <Select
             value={formData.timeline}
             onValueChange={(v) => updateField("timeline", v)}
           >
             <SelectTrigger id="timeline" className="w-full">
-              <SelectValue placeholder="Select a timeline" />
+              <SelectValue placeholder="Pick a timeline" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="asap">ASAP</SelectItem>
-              <SelectItem value="1-3-months">1 - 3 months</SelectItem>
-              <SelectItem value="3-6-months">3 - 6 months</SelectItem>
-              <SelectItem value="6-12-months">6 - 12 months</SelectItem>
-              <SelectItem value="flexible">Flexible</SelectItem>
+              <SelectItem value="asap">As soon as possible</SelectItem>
+              <SelectItem value="1-3-months">Within the next 1 - 3 months</SelectItem>
+              <SelectItem value="3-6-months">In 3 - 6 months</SelectItem>
+              <SelectItem value="flexible">
+                I{"'"}m flexible -- just exploring for now
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="flex flex-col gap-2">
-          <Label htmlFor="additionalNotes">Anything else we should know?</Label>
+          <Label htmlFor="anythingElse">
+            Anything else you{"'"}d like us to know?
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            Inspiration links, concerns, context -- anything that helps us
+            understand your world better.
+          </p>
           <Textarea
-            id="additionalNotes"
-            placeholder="Any additional context, links, inspiration, or constraints."
+            id="anythingElse"
+            placeholder="Feel free to share anything on your mind..."
             className="min-h-32"
-            value={formData.additionalNotes}
-            onChange={(e) => updateField("additionalNotes", e.target.value)}
+            value={formData.anythingElse}
+            onChange={(e) => updateField("anythingElse", e.target.value)}
           />
         </div>
       </div>
@@ -616,82 +690,78 @@ function StepReview({ formData }: { formData: FormData }) {
   }
 
   const timelineLabels: Record<string, string> = {
-    asap: "ASAP",
-    "1-3-months": "1 - 3 months",
-    "3-6-months": "3 - 6 months",
-    "6-12-months": "6 - 12 months",
-    flexible: "Flexible",
+    asap: "As soon as possible",
+    "1-3-months": "Within 1 - 3 months",
+    "3-6-months": "In 3 - 6 months",
+    flexible: "Flexible -- just exploring",
   }
 
   const roleLabels: Record<string, string> = {
-    founder: "Founder / CEO",
-    "product-manager": "Product Manager",
-    cto: "CTO / Technical Lead",
-    designer: "Designer",
-    marketing: "Marketing",
-    other: "Other",
+    "technical-partner":
+      "Looking for a technical partner to bring my idea to life",
+    "business-owner":
+      "Business owner who wants to digitize operations or launch a new revenue stream",
+    "custom-software":
+      "Looking for a team to build custom software to replace spreadsheets and manual work",
+    exploring:
+      "Exploring whether a software product makes sense for my use case",
   }
 
   return (
     <div>
       <h2 className="mb-2 text-2xl font-bold text-foreground">
-        Review your submission
+        Here{"'"}s what you told us
       </h2>
-      <p className="mb-8 text-sm text-muted-foreground">
-        Please review the details below before submitting. You can go back to
+      <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+        Take a look and make sure everything looks right. You can go back to
         any step to make changes.
       </p>
 
       <div className="flex flex-col gap-6 rounded-xl border border-border bg-card p-6">
-        <ReviewSection title="Basic Info">
+        <ReviewSection title="About You">
           <ReviewField label="Name" value={formData.fullName} />
-          <ReviewField label="Email" value={formData.email} />
-          <ReviewField label="Company" value={formData.companyName || "N/A"} />
+          <ReviewField label="Contact" value={formData.email} />
           <ReviewField
-            label="Role"
+            label="I am..."
             value={roleLabels[formData.role] || "Not specified"}
           />
         </ReviewSection>
 
         <div className="h-px bg-border" />
 
-        <ReviewSection title="Your Idea">
-          <ReviewField label="Project Name" value={formData.projectName} />
+        <ReviewSection title="Vision & Purpose">
+          <ReviewField label="The vision" value={formData.vision} />
           <ReviewField
-            label="Description"
-            value={formData.projectDescription}
+            label="Who it's for"
+            value={formData.whoIsItFor || "Not specified"}
           />
           <ReviewField
-            label="Target Audience"
-            value={formData.targetAudience || "Not specified"}
-          />
-          <ReviewField
-            label="Problem Solved"
-            value={formData.problemSolved || "Not specified"}
+            label="Biggest challenge"
+            value={formData.biggestChallenge || "Not specified"}
           />
         </ReviewSection>
 
         <div className="h-px bg-border" />
 
-        <ReviewSection title="Requirements">
+        <ReviewSection title="What You Need">
           <ReviewField
-            label="Platforms"
+            label="Where people use it"
             value={
               formData.platforms.length > 0
                 ? formData.platforms.join(", ")
                 : "Not specified"
             }
           />
-          <ReviewField label="Key Features" value={formData.keyFeatures} />
+          <ReviewField label="Must-haves" value={formData.mustHaves} />
           <ReviewField
-            label="Design Preferences"
-            value={formData.designPreferences || "Not specified"}
+            label="Look & feel"
+            value={formData.lookAndFeel || "Not specified"}
           />
         </ReviewSection>
 
         <div className="h-px bg-border" />
 
-        <ReviewSection title="Budget & Timeline">
+        <ReviewSection title="Practicalities">
           <ReviewField
             label="Budget"
             value={budgetLabels[formData.budgetRange] || "Not specified"}
@@ -701,8 +771,8 @@ function StepReview({ formData }: { formData: FormData }) {
             value={timelineLabels[formData.timeline] || "Not specified"}
           />
           <ReviewField
-            label="Additional Notes"
-            value={formData.additionalNotes || "None"}
+            label="Other notes"
+            value={formData.anythingElse || "None"}
           />
         </ReviewSection>
       </div>
@@ -730,7 +800,7 @@ function ReviewSection({
 function ReviewField({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-4">
-      <span className="min-w-32 shrink-0 text-sm text-muted-foreground">
+      <span className="min-w-40 shrink-0 text-sm text-muted-foreground">
         {label}
       </span>
       <span className="text-sm text-foreground">{value || "---"}</span>
@@ -746,22 +816,18 @@ function SuccessScreen({ formData }: { formData: FormData }) {
           <Check className="size-8 text-emerald-500" />
         </div>
         <h1 className="mb-3 text-2xl font-bold text-foreground">
-          Intake submitted!
+          You{"'"}re all set, {formData.fullName || "there"}!
         </h1>
-        <p className="mb-2 text-sm text-muted-foreground">
-          Thank you, {formData.fullName || "there"}. We{"'"}ve received your
-          intake for{" "}
-          <span className="font-medium text-foreground">
-            {formData.projectName || "your project"}
-          </span>
-          .
+        <p className="mb-2 text-sm leading-relaxed text-muted-foreground">
+          We{"'"}ve received everything we need to start preparing for your
+          discovery call.
         </p>
-        <p className="mb-8 text-sm text-muted-foreground">
-          Our team will review your submission and reach out to{" "}
+        <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+          Someone from our team will reach out to{" "}
           <span className="font-medium text-foreground">
             {formData.email || "your email"}
           </span>{" "}
-          within 1-2 business days to schedule a discovery call.
+          within 1-2 business days. We{"'"}re looking forward to it.
         </p>
         <Link href="/">
           <Button variant="outline" className="rounded-full px-6">

@@ -683,11 +683,11 @@ function StepPracticalities({
               <SelectValue placeholder="Pick a range (or skip this)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="under-10k">Under $10,000</SelectItem>
-              <SelectItem value="10k-25k">$10,000 - $25,000</SelectItem>
-              <SelectItem value="25k-50k">$25,000 - $50,000</SelectItem>
-              <SelectItem value="50k-100k">$50,000 - $100,000</SelectItem>
-              <SelectItem value="over-100k">$100,000+</SelectItem>
+              <SelectItem value="under-500k">Under ₱500,000</SelectItem>
+              <SelectItem value="500k-1m">₱500,000 - ₱1,000,000</SelectItem>
+              <SelectItem value="1m-2.5m">₱1,000,000 - ₱2,500,000</SelectItem>
+              <SelectItem value="2.5m-5m">₱2,500,000 - ₱5,000,000</SelectItem>
+              <SelectItem value="over-5m">₱5,000,000+</SelectItem>
               <SelectItem value="not-sure">
                 Honestly, no idea yet -- help me figure it out
               </SelectItem>
@@ -738,11 +738,11 @@ function StepPracticalities({
 
 function StepReview({ formData }: { formData: FormData }) {
   const budgetLabels: Record<string, string> = {
-    "under-10k": "Under $10,000",
-    "10k-25k": "$10,000 - $25,000",
-    "25k-50k": "$25,000 - $50,000",
-    "50k-100k": "$50,000 - $100,000",
-    "over-100k": "$100,000+",
+    "under-500k": "Under ₱500,000",
+    "500k-1m": "₱500,000 - ₱1,000,000",
+    "1m-2.5m": "₱1,000,000 - ₱2,500,000",
+    "2.5m-5m": "₱2,500,000 - ₱5,000,000",
+    "over-5m": "₱5,000,000+",
     "not-sure": "Not sure yet",
   }
 

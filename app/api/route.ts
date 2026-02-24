@@ -1,32 +1,41 @@
 import { NextResponse } from "next/server"
 import { Resend } from "resend"
-import { render } from "@react-email/render"
 import IntakeEmail from "@/features/IntakeEmail"
-
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: Request) {
   try {
+    const apiKey = process.env.RESEND_API_KEY
+    const from = process.env.INTAKE_FROM_EMAIL
+    const to = process.env.INTAKE_NOTIFY_EMAIL
+
+    if (!apiKey) {
+      return NextResponse.json({ ok: false, error: "RESEND_API_KEY missing" }, { status: 500 })
+    }
+    if (!from) {
+      return NextResponse.json({ ok: false, error: "INTAKE_FROM_EMAIL missing" }, { status: 500 })
+    }
+    if (!to) {
+      return NextResponse.json({ ok: false, error: "INTAKE_NOTIFY_EMAIL missing" }, { status: 500 })
+    }
+
     const body = await req.json()
+    const resend = new Resend(apiKey)
 
-    // ✅ FIX: await render
-    const html = await render(
-      IntakeEmail({ data: body })
-    )
-
-    await resend.emails.send({
-      from: process.env.INTAKE_FROM_EMAIL!,
-      to: process.env.INTAKE_NOTIFY_EMAIL!,
-      subject: `New Intake: ${body.fullName}`,
-      html: html, // now string, not Promise<string>
+    const result = await resend.emails.send({
+      from,
+      to,
+      subject: `New Intake: ${body.fullName || "Client"}`,
+      react: IntakeEmail({ data: body }),
     })
 
-    return NextResponse.json({ ok: true })
-
+    // ✅ This is the key: return Resend response
+    return NextResponse.json({
+      ok: true,
+      messageId: result?.data?.id ?? null,
+      result,
+    })
   } catch (err: any) {
-    return NextResponse.json(
-      { error: err.message },
-      { status: 500 }
-    )
+    console.error("RESEND ERROR:", err)
+    return NextResponse.json({ ok: false, error: err?.message || "Send failed" }, { status: 500 })
   }
 }

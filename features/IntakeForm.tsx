@@ -59,7 +59,6 @@ async function handleSubmit() {
   const stepErrors = validateStep(currentStep, formData)
   if (Object.keys(stepErrors).length) return setErrors(stepErrors)
 
-  // Convert meetingDate to ISO for API/email
   const payload = {
     ...formData,
     meetingDate: formData.meetingDate ? formData.meetingDate.toISOString() : "",
@@ -71,10 +70,11 @@ async function handleSubmit() {
     body: JSON.stringify(payload),
   })
 
-  if (!res.ok) {
-    // optional: show toast or inline error
-    const data = await res.json().catch(() => ({}))
-    alert(data?.error || "Failed to send email. Please try again.")
+  const data = await res.json().catch(() => ({}))
+  console.log("EMAIL API RESPONSE:", data)
+
+  if (!res.ok || !data?.messageId) {
+    alert(data?.error || "Email did not send (no messageId). Check console.")
     return
   }
 

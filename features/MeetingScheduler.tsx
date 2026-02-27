@@ -1,41 +1,57 @@
 "use client"
+
+import { useEffect, useMemo } from "react"
 import { CalendarDays } from "lucide-react"
-import { addDays, isBefore, startOfDay, format } from "date-fns"
+import { addDays, format, isBefore, startOfDay } from "date-fns"
 
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
 import { Calendar } from "@/components/ui/calendar"
+import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 type Props = {
   valueDate: Date | null
   valueTime: string
-  onChangeDate: (d: Date | null) => void
-  onChangeTime: (t: string) => void
+  onChangeDateAction: (d: Date | null) => void
+  onChangeTimeAction: (t: string) => void
   errorDate?: string
   errorTime?: string
-
-  // rules
   blockedWeekdays?: number[]
   blockedDates?: Date[]
   minDaysFromToday?: number
   maxDaysFromToday?: number
-  timeSlots?: string[]
+  weekdayTimeSlots?: string[]
+  weekendTimeSlots?: string[]
+}
+
+function toStandardTime(hour24: number) {
+  const period = hour24 >= 12 ? "PM" : "AM"
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12
+  return `${hour12}:00 ${period}`
+}
+
+function buildHourlySlots(startHour: number, endHour: number) {
+  const slots: string[] = []
+  for (let hour = startHour; hour <= endHour; hour += 1) {
+    slots.push(toStandardTime(hour))
+  }
+  return slots
 }
 
 export default function MeetingScheduler({
   valueDate,
   valueTime,
-  onChangeDate,
-  onChangeTime,
+  onChangeDateAction,
+  onChangeTimeAction,
   errorDate,
   errorTime,
-  blockedWeekdays = [0, 6], // default block Sat+Sun
+  blockedWeekdays = [],
   blockedDates = [],
-  minDaysFromToday = 1, // earliest tomorrow
-  maxDaysFromToday = 21, // next 3 weeks
-  timeSlots = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00"],
+  minDaysFromToday = 1,
+  maxDaysFromToday = 21,
+  weekdayTimeSlots = buildHourlySlots(9, 19),
+  weekendTimeSlots = buildHourlySlots(0, 23),
 }: Props) {
   const today = startOfDay(new Date())
   const minDate = addDays(today, minDaysFromToday)
@@ -46,13 +62,23 @@ export default function MeetingScheduler({
 
     if (isBefore(d, minDate)) return true
     if (isBefore(maxDate, d)) return true
-
     if (blockedWeekdays.includes(d.getDay())) return true
-
     if (blockedDates.some((bd) => startOfDay(bd).getTime() === d.getTime())) return true
 
     return false
   }
+
+  const availableTimeSlots = useMemo(() => {
+    if (!valueDate) return weekdayTimeSlots
+    const day = valueDate.getDay()
+    const isWeekend = day === 0 || day === 6
+    return isWeekend ? weekendTimeSlots : weekdayTimeSlots
+  }, [valueDate, weekdayTimeSlots, weekendTimeSlots])
+
+  useEffect(() => {
+    if (!valueTime) return
+    if (!availableTimeSlots.includes(valueTime)) onChangeTimeAction("")
+  }, [availableTimeSlots, onChangeTimeAction, valueTime])
 
   return (
     <div className="rounded-xl border border-border bg-card p-4">
@@ -61,7 +87,7 @@ export default function MeetingScheduler({
         <p className="text-sm font-medium text-foreground">Set a meeting with us</p>
       </div>
       <p className="mb-4 text-xs text-muted-foreground">
-        Pick a preferred date and time for a short discovery call. We’ll confirm the slot.
+        Weekdays: 9:00 AM to 7:00 PM. Weekends: available 24 hours. We&apos;ll confirm your slot.
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -84,7 +110,7 @@ export default function MeetingScheduler({
               <Calendar
                 mode="single"
                 selected={valueDate ?? undefined}
-                onSelect={(d) => onChangeDate(d ?? null)}
+                onSelect={(d) => onChangeDateAction(d ?? null)}
                 disabled={disabled}
                 initialFocus
               />
@@ -99,12 +125,12 @@ export default function MeetingScheduler({
             Preferred time <span className="text-destructive">*</span>
           </Label>
 
-          <Select value={valueTime} onValueChange={onChangeTime}>
+          <Select value={valueTime} onValueChange={onChangeTimeAction}>
             <SelectTrigger className={`${errorTime ? "border-destructive" : ""}`}>
               <SelectValue placeholder="Select a time" />
             </SelectTrigger>
             <SelectContent>
-              {timeSlots.map((t) => (
+              {availableTimeSlots.map((t) => (
                 <SelectItem key={t} value={t}>
                   {t}
                 </SelectItem>

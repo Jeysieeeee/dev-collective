@@ -62,11 +62,10 @@ export default function StepPracticalities({
         <MeetingScheduler
           valueDate={formData.meetingDate}
           valueTime={formData.meetingTime}
-          onChangeDate={(d) => updateField("meetingDate", d)}
-          onChangeTime={(t) => updateField("meetingTime", t)}
+          onChangeDateAction={(d) => updateField("meetingDate", d)}
+          onChangeTimeAction={(t) => updateField("meetingTime", t)}
           errorDate={errors.meetingDate}
           errorTime={errors.meetingTime}
-          blockedWeekdays={[0, 6]} // block weekends
           minDaysFromToday={1}
           maxDaysFromToday={21}
         />

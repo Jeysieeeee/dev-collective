@@ -84,29 +84,29 @@ async function handleSubmit() {
   if (submitted) return <SuccessScreen formData={formData} />
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="intake-flow flex min-h-screen flex-col bg-background">
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
+        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2">
             <Code2 className="size-5 text-foreground" />
-            <span className="text-sm font-semibold tracking-tight text-foreground">
+            <span className="text-base font-semibold tracking-tight text-foreground">
               Developer Collective
             </span>
           </Link>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-sm text-muted-foreground">
             Step {currentStep} of {STEPS.length}
           </span>
         </div>
       </header>
 
-      <div className="mx-auto w-full max-w-3xl px-6 pt-6">
+      <div className="mx-auto w-full max-w-5xl px-6 pt-8">
         <Progress value={progress} className="h-1" />
         <div className="mt-3 flex justify-between">
           {STEPS.map((step) => (
             <button
               key={step.id}
               onClick={() => step.id < currentStep && setCurrentStep(step.id)}
-              className={`text-xs transition-colors ${
+              className={`text-sm transition-colors md:text-base ${
                 step.id === currentStep
                   ? "font-medium text-foreground"
                   : step.id < currentStep
@@ -121,8 +121,8 @@ async function handleSubmit() {
         </div>
       </div>
 
-      <main className="flex flex-1 items-start justify-center px-6 py-10 md:py-16">
-        <div className="w-full max-w-2xl">
+      <main className="flex flex-1 items-start justify-center px-6 py-12 md:py-18">
+        <div className="w-full max-w-4xl">
           {currentStep === 1 && (
             <StepAboutYou formData={formData} updateField={updateField} errors={errors} />
           )}
@@ -142,24 +142,24 @@ async function handleSubmit() {
           )}
           {currentStep === 5 && <Review formData={formData} />}
 
-          <div className="mt-10 flex items-center justify-between">
+          <div className="mt-12 flex items-center justify-between">
             <Button
               variant="ghost"
               onClick={prevStep}
               disabled={currentStep === 1}
-              className="gap-2"
+              className="h-11 gap-2 px-4 text-base"
             >
               <ArrowLeft className="size-4" />
               Back
             </Button>
 
             {currentStep < STEPS.length ? (
-              <Button onClick={nextStep} className="gap-2 rounded-full px-6">
+              <Button onClick={nextStep} className="h-11 gap-2 rounded-full px-7 text-base">
                 Continue
                 <ArrowRight className="size-4" />
               </Button>
             ) : (
-              <Button onClick={handleSubmit} className="gap-2 rounded-full px-6">
+              <Button onClick={handleSubmit} className="h-11 gap-2 rounded-full px-7 text-base">
                 Submit
                 <Check className="size-4" />
               </Button>

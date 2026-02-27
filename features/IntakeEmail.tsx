@@ -32,9 +32,9 @@ type FormDataEmail = {
 
 function Field({ label, value }: { label: string; value?: string }) {
   return (
-    <Section style={{ marginBottom: 10 }}>
-      <Text style={{ margin: 0, fontSize: 12, color: "#6b7280" }}>{label}</Text>
-      <Text style={{ margin: 0, fontSize: 14, color: "#111827" }}>
+    <Section  className="margin-bottom-10">
+      <Text className="margin-0 font-size-12 text-[#6b7280]">{label}</Text>
+      <Text  className="font-size-14 text-[#111827] margin-0">
         {value?.trim() ? value : "---"}
       </Text>
     </Section>

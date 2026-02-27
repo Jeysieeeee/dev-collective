@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </radialGradient>
+    <linearGradient id="code" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7dd3fc"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="128" height="128" rx="24" fill="url(#bg)"/>
+
+  <!-- Circle -->
+  <circle cx="64" cy="64" r="40" fill="none" stroke="url(#code)" stroke-width="4" stroke-dasharray="4 6"/>
+
+  <!-- Code symbol -->
+  <path d="M50 48 L36 64 L50 80" fill="none" stroke="url(#code)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M78 48 L92 64 L78 80" fill="none" stroke="url(#code)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="62" y1="44" x2="66" y2="84" stroke="url(#code)" stroke-width="6" stroke-linecap="round"/>
+</svg>
